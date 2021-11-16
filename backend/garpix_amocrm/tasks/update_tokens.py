@@ -4,7 +4,7 @@ from ..models import Amo
 
 @app.task
 def update_tokens_task():
-    print('updating amo tokens...')
+    print('updating garpix_amocrm tokens...')
     amo = Amo.get_solo()
     amo.save()
 

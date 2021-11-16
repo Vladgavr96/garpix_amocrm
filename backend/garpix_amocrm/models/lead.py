@@ -21,7 +21,7 @@ class Lead(models.Model):
     @classmethod
     def create_lead_order(cls, order):
         '''
-        pipenv run python backend/manage.py shell -c "from order.models import Order; from amo.models import Lead; order = Order.objects.filter(id=11).first(); Lead.create_lead_order(order)"
+        pipenv run python backend/manage.py shell -c "from order.models import Order; from garpix_amocrm.models import Lead; order = Order.objects.filter(id=11).first(); Lead.create_lead_order(order)"
         '''
         amo = Amo.get_solo()
         if order.user:
