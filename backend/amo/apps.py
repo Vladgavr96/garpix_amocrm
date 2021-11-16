@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class GarpixAmocrmConfig(AppConfig):
-    name = 'garpix_amocrm'
+    name = 'amo'
     verbose_name = 'GarpixAmocrm'

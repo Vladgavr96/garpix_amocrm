@@ -8,7 +8,7 @@ with open(path.join(settings.BASE_DIR, '..', 'README.md'), encoding='utf-8') as 
     long_description = convert(f.read())
 
 setup(
-    name='garpix_amocrm',
+    name='amo',
     version='1.0.0',
     description='',
     long_description=long_description,
