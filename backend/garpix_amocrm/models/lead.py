@@ -301,24 +301,7 @@ class Lead(models.Model):
         response = session.post(url=url, json=data)
         if response.status_code == 200:
             lead_data = response.json()
-            uid = lead_data['_embedded']['unsorted'][0]['uid']#???
-            cls.objects.create(uid=uid, lead_data=lead_data)
-            entity_id = lead_data['_embedded']['unsorted'][0]['_embedded']['leads'][0]['id']#???
-            note_url = f'{amo.cabinet_url}/api/v4/leads/{entity_id}/notes'
-            note = ''
-            for order_item in order.order_items.all():
-                note += f'{order_item.product_name}, {order_item.package_quantity} упаковок,' \
-                        f' {order_item.item_quantity} штук, цена ед. {order_item.total_price}р\n'
-            note += f'Сумма заказа: {order.total_cost}'
-            note_data = [
-                {
-                    "note_type": "common",
-                    "params": {
-                        "text": note
-                    }
-                }
-            ]
-            response = session.post(url=note_url, json=note_data)
+            entity_id = lead_data['_embedded']['unsorted'][0]['_embedded']['leads'][0]['id']
             return entity_id
         else:
             return response.status_code, response.text
@@ -333,31 +316,60 @@ class Lead(models.Model):
         response = session.post(url=url, json=data)
         if response.status_code == 200:
             lead_data = response.json()
-            uid = lead_data['_embedded']['leads'][0]['id']
-            cls.objects.create(uid=uid, lead_data=lead_data)
-            entity_id = uid
-            note_url = f'{amo.cabinet_url}/api/v4/leads/{entity_id}/notes'
-            note = ''
-            for order_item in order.order_items.all():
-                note += f'{order_item.product_name}, {order_item.package_quantity} упаковок,' \
-                        f' {order_item.item_quantity} штук, цена ед. {order_item.total_price}р\n'
-            note += f'Сумма заказа: {order.total_cost}\n'
-            if order.customer_company_name:
-                note += f'Компания: {order.customer_company_name}\n'
-            if order.customer_company_requisites:
-                site_domain = Site.objects.first().domain
-                note += f'Реквизиты: {site_domain + order.customer_company_requisites.url}\n'
-            note += f'Населенный пункт: {order.get_customer_locality_display()}\n'
-            note_data = [
-                {
-                    "note_type": "common",
-                    "params": {
-                        "text": note
-                    }
-                }
-            ]
-            response = session.post(url=note_url, json=note_data)
+            entity_id = lead_data['_embedded']['leads'][0]['id']
             return entity_id
         else:
             return response.status_code, response.text
+
+    @classmethod
+    def get_unsorted_list(cls, amo):
+        url = f'{amo.cabinet_url}/api/v4/leads/unsorted'
+
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        response = session.get(url=url)
+        if response.status_code == 200:
+            unsorted_list = response.json()
+            return unsorted_list
+        else:
+            return response.status_code, response.text
+
+    @classmethod
+    def get_unsorted(cls, amo, uid):
+        url = f'{amo.cabinet_url}/api/v4/leads/unsorted/{uid}'
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        response = session.get(url=url)
+        if response.status_code == 200:
+            unsorted_element = response.json()
+            return unsorted_element
+        else:
+            return response.status_code, response.text
+
+
+    @classmethod
+    def get_leads_list(cls, amo):
+        url = f'{amo.cabinet_url}/api/v4/leads'
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        response = session.get(url=url)
+        if response.status_code == 200:
+            leads_list = response.json()
+            return leads_list
+        else:
+            return response.status_code, response.text
+
+    @classmethod
+    def get_lead(cls, amo, lead_id):
+        url = f'{amo.cabinet_url}/api/v4/leads/{lead_id}'
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        response = session.get(url=url)
+        if response.status_code == 200:
+            lead = response.json()
+            return lead
+        else:
+            return response.status_code, response.text
+
+
 
