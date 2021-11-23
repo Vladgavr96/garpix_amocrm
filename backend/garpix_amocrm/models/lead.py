@@ -370,6 +370,81 @@ class Lead(models.Model):
             return lead
         else:
             return response.status_code, response.text
+    '''
+    @classmethod
+    def create_lead_feedback(cls, feedback):
+        amo = Amo.get_solo()
+        url = f'{amo.cabinet_url}/api/v4/leads/unsorted/forms'
+        when_contact = ''
+        if feedback.is_urgent:
+            when_contact = 'КАК МОЖНО СКОРЕЕ'
+        else:
+            when_contact += str(feedback.day_of_call) + '\n' if feedback.day_of_call else ''
+            when_contact += str(feedback.time_of_call) + '\n' if feedback.time_of_call else ''
 
+        data = [
+            {
+                "source_name": feedback.full_name,
+                "source_uid": str(feedback.id),
+                "pipeline_id": int(amo.pipeline_id),
+                "_embedded": {
+                    "leads": [
+                        {
+                            "name": "Обратная связь с сайта",
+                        }
+                    ],
+                    "contacts": [
+                        {
+                            "name": feedback.full_name,
+                            "custom_fields_values": [
+                                {
+                                    "field_code": "PHONE",
+                                    "values": [{"value": feedback.phone_number}]
+                                },
+                                {
+                                    "field_code": "WHEN_CONTACT",
+                                    "values": [{"value": when_contact}]
+                                },
+                            ]
+                        }
+                    ],
+                },
+                "metadata": {
+                    "form_id": "1",
+                    "form_sent_at": int(time()),
+                    "form_name": "Форма обратной связи с сайта",
+                    "form_page": amo.redirect_url,
+                }
+            }
+        ]
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        session.headers.update({'Content-Type': 'application/json'})
+        response = session.post(url=url, json=data)
+        if response.status_code == 200:
+            lead_data = response.json()
+            uid = lead_data['_embedded']['unsorted'][0]['uid']
+            cls.objects.create(uid=uid, lead_data=lead_data)
+        return response.status_code, response.text
+    '''
+    @classmethod
+    def show_lead_fields(cls, amo):
+        url = f'{amo.cabinet_url}/api/v4/leads/custom_fields'
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        response = session.get(url=url)
+        if response.status_code == 200:
+            lead_feields = response.json()
+            return lead_feields
+        else:
+            return response.status_code, response.text
 
+    @classmethod
+    def create_lead_fields(cls, new_fields):# еще не готов
+        amo = Amo.get_solo()
+        url = f'{amo.cabinet_url}/api/v4/leads/custom_fields'
+        session = requests.Session()
+        session.headers = {"Authorization": f'Bearer {amo.access_token}'}
+        session.headers.update({'Content-Type': 'application/json'})
+        response = session.post(url=url, json=new_fields)
 
