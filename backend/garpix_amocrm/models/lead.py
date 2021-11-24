@@ -2,6 +2,8 @@ from time import time
 import requests
 from django.contrib.sites.models import Site
 from django.db import models
+
+import testamo.models
 from .amo import Amo
 
 
@@ -10,6 +12,7 @@ class Lead(models.Model):
     uid = models.CharField(max_length=128, verbose_name='uid', blank=True, null=True)
     lead_data = models.JSONField(verbose_name='Данные заявки', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    models.ForeignKey(testamo.models.TestamoPage, on_delete=models.CASCADE, verbose_name='Страница (привязка)', related_name='lead')
 
     class Meta:
         verbose_name = 'Лид'
@@ -370,63 +373,45 @@ class Lead(models.Model):
             return lead
         else:
             return response.status_code, response.text
-    '''
-    @classmethod
-    def create_lead_feedback(cls, feedback):
-        amo = Amo.get_solo()
-        url = f'{amo.cabinet_url}/api/v4/leads/unsorted/forms'
-        when_contact = ''
-        if feedback.is_urgent:
-            when_contact = 'КАК МОЖНО СКОРЕЕ'
-        else:
-            when_contact += str(feedback.day_of_call) + '\n' if feedback.day_of_call else ''
-            when_contact += str(feedback.time_of_call) + '\n' if feedback.time_of_call else ''
 
-        data = [
-            {
-                "source_name": feedback.full_name,
-                "source_uid": str(feedback.id),
-                "pipeline_id": int(amo.pipeline_id),
-                "_embedded": {
-                    "leads": [
-                        {
-                            "name": "Обратная связь с сайта",
-                        }
-                    ],
-                    "contacts": [
-                        {
-                            "name": feedback.full_name,
-                            "custom_fields_values": [
-                                {
-                                    "field_code": "PHONE",
-                                    "values": [{"value": feedback.phone_number}]
-                                },
-                                {
-                                    "field_code": "WHEN_CONTACT",
-                                    "values": [{"value": when_contact}]
-                                },
-                            ]
-                        }
-                    ],
-                },
-                "metadata": {
-                    "form_id": "1",
-                    "form_sent_at": int(time()),
-                    "form_name": "Форма обратной связи с сайта",
-                    "form_page": amo.redirect_url,
-                }
-            }
-        ]
+
+    @classmethod
+    def add_note_to_lead(cls, amo, order, data):
+        url = f'{amo.cabinet_url}/api/v4/leads'
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
         session.headers.update({'Content-Type': 'application/json'})
         response = session.post(url=url, json=data)
+
         if response.status_code == 200:
             lead_data = response.json()
-            uid = lead_data['_embedded']['unsorted'][0]['uid']
+            uid = lead_data['_embedded']['leads'][0]['id']
             cls.objects.create(uid=uid, lead_data=lead_data)
-        return response.status_code, response.text
-    '''
+            status = True
+            entity_id = uid
+            note_url = f'{amo.cabinet_url}/api/v4/leads/{entity_id}/notes'
+            note = ''
+            for order_item in order.order_items.all():
+                note += f'{order_item.product_name}, {order_item.package_quantity} упаковок,' \
+                        f' {order_item.item_quantity} штук, цена ед. {order_item.total_price}р\n'
+            note += f'Сумма заказа: {order.total_cost}\n'
+            if order.customer_company_name:
+                note += f'Компания: {order.customer_company_name}\n'
+            if order.customer_company_requisites:
+                site_domain = Site.objects.first().domain
+                note += f'Реквизиты: {site_domain + order.customer_company_requisites.url}\n'
+            note += f'Населенный пункт: {order.get_customer_locality_display()}\n'
+            note_data = [
+                {
+                    "note_type": "common",
+                    "params": {
+                        "text": note
+                    }
+                }
+            ]
+            response = session.post(url=note_url, json=note_data)
+        return status
+
     @classmethod
     def show_lead_fields(cls, amo):
         url = f'{amo.cabinet_url}/api/v4/leads/custom_fields'
@@ -447,4 +432,10 @@ class Lead(models.Model):
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
         session.headers.update({'Content-Type': 'application/json'})
         response = session.post(url=url, json=new_fields)
-
+        if response.status_code == 200:
+            lead_data = response.json()
+            uid = lead_data['_embedded']['leads'][0]['id']
+            cls.objects.create(uid=uid, lead_data=lead_data)
+            return response
+        else:
+            return response.status_code, response.text
