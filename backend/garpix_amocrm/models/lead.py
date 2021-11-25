@@ -12,7 +12,6 @@ class Lead(models.Model):
     uid = models.CharField(max_length=128, verbose_name='uid', blank=True, null=True)
     lead_data = models.JSONField(verbose_name='Данные заявки', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
-    models.ForeignKey(testamo.models.TestamoPage, on_delete=models.CASCADE, verbose_name='Страница (привязка)', related_name='lead')
 
     class Meta:
         verbose_name = 'Лид'
