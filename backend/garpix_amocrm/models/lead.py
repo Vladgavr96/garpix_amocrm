@@ -6,6 +6,9 @@ from django.db import models
 from .amo import Amo
 
 
+amo = Amo.get_solo()
+
+
 class Lead(models.Model):
 
     uid = models.CharField(max_length=128, verbose_name='uid', blank=True, null=True)
@@ -308,7 +311,7 @@ class Lead(models.Model):
             return response.status_code, response.text
 
     @classmethod
-    def create_lead(cls, data, amo = Amo.get_solo()):
+    def create_lead(cls, data):
         url = f'{amo.cabinet_url}/api/v4/leads'
 
         session = requests.Session()
