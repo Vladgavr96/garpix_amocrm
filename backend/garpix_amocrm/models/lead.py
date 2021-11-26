@@ -3,7 +3,6 @@ import requests
 from django.contrib.sites.models import Site
 from django.db import models
 
-import testamo.models
 from .amo import Amo
 
 
@@ -292,7 +291,7 @@ class Lead(models.Model):
         return status
 
     @classmethod
-    def create_unsorted(cls, order, amo, data):
+    def create_unsorted(cls, amo, data):
         url = f'{amo.cabinet_url}/api/v4/leads/unsorted/forms'
         site_domain = Site.objects.first().domain
 
@@ -309,7 +308,7 @@ class Lead(models.Model):
             return response.status_code, response.text
 
     @classmethod
-    def create_lead(cls, order, amo, data):
+    def create_lead(cls, data, amo = Amo.get_solo()):
         url = f'{amo.cabinet_url}/api/v4/leads'
 
         session = requests.Session()
