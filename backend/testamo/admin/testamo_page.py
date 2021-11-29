@@ -5,4 +5,4 @@ from garpix_page.admin import BasePageAdmin
 
 @admin.register(TestamoPage)
 class TestamoPageAdmin(BasePageAdmin):
-    pass
+    list_display = ('__all__')

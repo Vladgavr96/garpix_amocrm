@@ -326,9 +326,9 @@ class Lead(models.Model):
             return response.status_code, response.text
 
     @classmethod
-    def get_unsorted_list(cls, amo):
+    def get_unsorted_list(cls):
+        amo = Amo.get_solo()
         url = f'{amo.cabinet_url}/api/v4/leads/unsorted'
-
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
         response = session.get(url=url)
@@ -339,7 +339,8 @@ class Lead(models.Model):
             return response.status_code, response.text
 
     @classmethod
-    def get_unsorted(cls, amo, uid):
+    def get_unsorted(cls, uid):
+        amo = Amo.get_solo()
         url = f'{amo.cabinet_url}/api/v4/leads/unsorted/{uid}'
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
@@ -352,7 +353,8 @@ class Lead(models.Model):
 
 
     @classmethod
-    def get_leads_list(cls, amo):
+    def get_leads_list(cls):
+        amo = Amo.get_solo()
         url = f'{amo.cabinet_url}/api/v4/leads'
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}

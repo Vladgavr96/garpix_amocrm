@@ -1,7 +1,10 @@
-{% extends 'base.html' %}
+
 
 {% block content %}
 
-{% include 'include/breadcrumb.html' %}
+<p>{{context}}</p>
+{%for field in context %}
+{{field}}
+{%endfor%}
 
 {% endblock %}

@@ -1,4 +1,3 @@
-
 from garpix_page.models import BasePage
 from garpix_amocrm.models import Lead
 
@@ -11,12 +10,16 @@ class TestamoPage(BasePage):
 
     def get_context(self, request=None, *args, **kwargs):
         context = super(TestamoPage, self).get_context(request, *args, **kwargs)
-
         data = {
-            #!!!
+            'name':'test',
+            'price':1000,
+
         }
-        Lead.create_lead(data=data)
+        res = Lead.create_lead(data=data)
+        context.update(res)
+        print(res)
         return context
+
 
     class Meta:
         verbose_name = "Testamo"
