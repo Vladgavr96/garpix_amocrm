@@ -1,8 +1,8 @@
 
-
 {% block content %}
+{% csrf_token %}
 <p>{{context}}</p>
-{%for field in context %}
+{%for field in res %}
 {{field}}
 {%endfor%}
 
