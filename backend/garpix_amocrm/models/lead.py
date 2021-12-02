@@ -379,7 +379,8 @@ class Lead(models.Model):
 
 
     @classmethod
-    def add_note_to_lead(cls, amo, order, data):
+    def add_note_to_lead(cls, data, lead_id):
+        amo = Amo.get_solo()
         url = f'{amo.cabinet_url}/api/v4/leads'
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
@@ -391,29 +392,19 @@ class Lead(models.Model):
             uid = lead_data['_embedded']['leads'][0]['id']
             cls.objects.create(uid=uid, lead_data=lead_data)
             status = True
-            entity_id = uid
-            note_url = f'{amo.cabinet_url}/api/v4/leads/{entity_id}/notes'
-            note = ''
-            for order_item in order.order_items.all():
-                note += f'{order_item.product_name}, {order_item.package_quantity} упаковок,' \
-                        f' {order_item.item_quantity} штук, цена ед. {order_item.total_price}р\n'
-            note += f'Сумма заказа: {order.total_cost}\n'
-            if order.customer_company_name:
-                note += f'Компания: {order.customer_company_name}\n'
-            if order.customer_company_requisites:
-                site_domain = Site.objects.first().domain
-                note += f'Реквизиты: {site_domain + order.customer_company_requisites.url}\n'
-            note += f'Населенный пункт: {order.get_customer_locality_display()}\n'
+            note_url = f'{amo.cabinet_url}/api/v4/leads/{lead_id}/notes'
             note_data = [
                 {
                     "note_type": "common",
                     "params": {
-                        "text": note
+                        "text": data
                     }
                 }
             ]
             response = session.post(url=note_url, json=note_data)
-        return status
+            return response.status_code, response.text
+        else:
+            return response.status_code, response.text
 
     @classmethod
     def show_lead_fields(cls, amo):
