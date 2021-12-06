@@ -366,7 +366,8 @@ class Lead(models.Model):
             return response.status_code, response.text
 
     @classmethod
-    def get_lead(cls, amo, lead_id):
+    def get_lead(cls, lead_id):
+        amo = Amo.get_solo()
         url = f'{amo.cabinet_url}/api/v4/leads/{lead_id}'
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
@@ -385,13 +386,9 @@ class Lead(models.Model):
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
         session.headers.update({'Content-Type': 'application/json'})
-        response = session.post(url=url, json=data)
+        response = session.get(url=url)
 
         if response.status_code == 200:
-            lead_data = response.json()
-            uid = lead_data['_embedded']['leads'][0]['id']
-            cls.objects.create(uid=uid, lead_data=lead_data)
-            status = True
             note_url = f'{amo.cabinet_url}/api/v4/leads/{lead_id}/notes'
             note_data = [
                 {
@@ -407,7 +404,8 @@ class Lead(models.Model):
             return response.status_code, response.text
 
     @classmethod
-    def show_lead_fields(cls, amo):
+    def show_lead_fields(cls):
+        amo = Amo.get_solo()
         url = f'{amo.cabinet_url}/api/v4/leads/custom_fields'
         session = requests.Session()
         session.headers = {"Authorization": f'Bearer {amo.access_token}'}
@@ -428,8 +426,8 @@ class Lead(models.Model):
         response = session.post(url=url, json=new_fields)
         if response.status_code == 200:
             lead_data = response.json()
-            uid = lead_data['_embedded']['leads'][0]['id']
-            cls.objects.create(uid=uid, lead_data=lead_data)
+            #uid = lead_data['_embedded']['leads'][0]['id']
+            #cls.objects.create(uid=uid, lead_data=lead_data)
             return response
         else:
             return response.status_code, response.text
