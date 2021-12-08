@@ -1,6 +1,6 @@
 from garpixcms.settings import *  # noqa
 
-INSTALLED_APPS += [
-    'garpix_amocrm',
-    'test'
-]
+INSTALLED_APPS += [# noqa
+    'garpix_amocrm',# noqa
+    'test' # noqa
+]# noqa

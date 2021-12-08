@@ -48,12 +48,15 @@ python3 backend/manage.py runserver
 7. Enjoy!
 
 Начало работы.
-
+Заполните раздел Амо в административной панели.
 Токены генерируются автоматически. ИД воронки можно взять из URL в разделе сделки на сайте amocrm. Остальные данные получаются при создании интеграции в личном кабинете amocrm
 
 Методы
 ```
-create_unsorted - создание несортированного объекта
+create_unsorted_forms - создание несортированной формы
+```
+```
+create_unsorted_sip - создание несортированного звонка
 ```
 ```
 create_lead - создание нового лида. Обязательные поля :
@@ -83,9 +86,20 @@ show_lead_field - Показывает все доступные поля для
 create_lead_fields - добавление кастомных полей к лидам. Обязательные поля :
 name
 type - тип данных поля. 
-Список доступных типов данных https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-types
 	Примечание: словарь с данными обязательно должен быть внутри списка
 ```
-
 Ссылка на документацию
 https://www.amocrm.ru/developers/content/crm_platform/api-reference
+
+Ссылка на несортированое в документации 
+https://www.amocrm.ru/developers/content/crm_platform/unsorted-api#unsorted-add-form
+
+Ссылка на Лиды в документации
+https://www.amocrm.ru/developers/content/crm_platform/leads-api
+
+Список доступных типов данных для кастомных полей 
+https://www.amocrm.ru/developers/content/crm_platform/custom-fields#cf-types
+
+Поля и группы полей
+https://www.amocrm.ru/developers/content/crm_platform/custom-fields
+
